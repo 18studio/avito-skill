@@ -1,0 +1,4 @@
+interface:
+  display_name: "Avito Business"
+  short_description: "Operate Avito business workflows through avito-py."
+  default_prompt: "Analyze my Avito business account and recommend the next actions."

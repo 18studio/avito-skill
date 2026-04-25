@@ -1,4 +1,0 @@
-interface:
-  display_name: "Avito Operations"
-  short_description: "Stats, ranking, and promotion on Avito"
-  default_prompt: "Use $avito to analyze listing statistics, estimate search placement, or decide whether to launch promotion on Avito."

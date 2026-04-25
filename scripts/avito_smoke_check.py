@@ -39,6 +39,7 @@ def redacted_error(exc: BaseException) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate avito-py import, environment configuration, and account auth.")
     parser.add_argument("--env-file", default=".env", help="Path to .env file, or empty string to use process env only.")
+    parser.add_argument("--user-id", type=int, default=None, help="Avito user ID for operations that require it.")
     parser.add_argument("--balance", action="store_true", help="Also fetch account balance.")
     args = parser.parse_args()
 
@@ -76,7 +77,7 @@ def main() -> int:
 
     if args.balance:
         try:
-            result["balance"] = to_plain(client.account().get_balance())
+            result["balance"] = to_plain(client.account(user_id=args.user_id).get_balance(user_id=args.user_id))
             result["stages"].append({"stage": "get_balance", "ok": True})
         except Exception as exc:
             result["stages"].append({"stage": "get_balance", "ok": False, "error": redacted_error(exc)})

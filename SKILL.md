@@ -12,6 +12,8 @@ Use this skill to turn an Avito business goal into a safe `avito-py` workflow: r
 - Use only `avito-py` from `p141592/avito_python_api`: https://p141592.github.io/avito_python_api/.
 - Use `avito.AvitoClient` and SDK configuration from environment, preferably `AvitoClient.from_env()`.
 - Do not use other SDKs, unofficial wrappers, scraping, browser automation, or direct HTTP unless `avito-py` lacks the required operation and the user explicitly approves the fallback.
+- Use final domain methods from `avito-py` directly. Do not recreate missing SDK workflows with custom aggregation, parsing, scoring, or business heuristics.
+- If `avito-py` lacks a final method for the requested report or action, return the required SDK/API improvements instead of implementing the missing logic locally.
 - Default to read/report/preview mode.
 - Never expose tokens, client secrets, refresh tokens, authorization headers, or raw credential-bearing errors.
 

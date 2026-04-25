@@ -18,6 +18,8 @@ Recommended structure:
 - `services/promotion.py`: promotion preview and execution
 - `services/normalize.py`: map raw SDK responses into stable internal shapes
 
+Read [pagination.md](pagination.md) before implementing any list or batch endpoint.
+
 This prevents SKILL consumers from depending on unstable SDK response details.
 
 ## Adapter Rules
@@ -58,6 +60,25 @@ Convert SDK objects or raw API payloads into stable dictionaries early:
 ```
 
 This makes downstream reporting and decision logic deterministic.
+
+### Rule 4. Preserve Lazy Pagination
+
+If an SDK method returns a lazy `PaginatedList`, keep it lazy through the service layer unless the use case explicitly requires a full materialized collection.
+
+Good uses:
+
+- iterate over ads to classify them
+- stop after the first N matches
+- stream a report incrementally
+
+Be careful with:
+
+- `len(items)` when `total` is unavailable
+- `items[:]`
+- negative indexes
+- `list(items)` on large datasets
+
+These can trigger loading of all remaining pages.
 
 ## Search Position Is Not a Native Fact
 

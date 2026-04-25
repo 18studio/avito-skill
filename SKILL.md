@@ -185,6 +185,8 @@ Do not jump from “traffic is bad” straight to “buy promotion”. Check whe
 
 Use `avito-py` as the primary integration layer. Read [references/sdk-integration.md](references/sdk-integration.md) before implementing scripts or API calls.
 
+Read [references/pagination.md](references/pagination.md) whenever the task touches list endpoints, batch reports, portfolio scans, or any workflow that can traverse many entities.
+
 If the SDK lacks a required method:
 
 1. Confirm whether the underlying Avito API supports the operation.
@@ -206,3 +208,41 @@ When this skill is implemented further, prefer this layout:
 - `scripts/portfolio_report.py`: build priority queues across many listings
 
 Keep all API-specific field mapping in shared helpers rather than in per-task scripts.
+
+## Pagination Rules
+
+Assume that modern `avito-py` supports a shared pagination abstraction:
+
+- `JsonPage` for typed page metadata
+- `Paginator` for explicit page traversal
+- `PaginatedList` for lazy list-like loading
+
+Use these rules:
+
+1. Prefer SDK-native pagination over handwritten `while offset += limit` loops.
+2. Treat list results as potentially lazy; do not force `len(...)`, full slicing, or equality against large plain lists unless the task really needs the whole dataset.
+3. When the user asks for “all listings” or a full account scan, say whether the code will stream lazily or materialize everything.
+4. Keep `limit` explicit for operational scripts so page size is predictable.
+5. Preserve the starting window when the user requests a partial range such as `limit=100, offset=200`; if the SDK returns a lazy list from that point, do not silently restart from page 1.
+
+Operational guidance:
+
+- For dashboards and top-N analysis, consume only the needed prefix of items.
+- For exports and full audits, materialize the full lazy list deliberately.
+- For promotion decisions across many ads, iterate lazily first and aggregate as you go when possible.
+
+Be careful with calls that trigger full pagination implicitly:
+
+- `len(items)`
+- `items[:]`
+- negative indexes
+- comparisons against ordinary lists
+
+These patterns can force the SDK to load all remaining pages.
+
+For user-facing scripts, expose the pagination mode explicitly:
+
+- default mode: `streaming`
+- full traversal mode: `materialize_all`
+
+Prefer a CLI flag such as `--all-pages` to switch from lazy or partial traversal to full collection.

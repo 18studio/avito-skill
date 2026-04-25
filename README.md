@@ -18,8 +18,9 @@ The repository currently contains the skill definition and reference materials:
 - `agents/openai.yaml` - UI metadata
 - `references/business-scenarios.md` - business use cases and KPI interpretation
 - `references/sdk-integration.md` - integration rules for `avito-py`
+- `references/pagination.md` - rules for lazy and explicit pagination in the SDK
 
-The Python implementation is not added yet. The next step is to verify actual SDK coverage and then implement the first scripts.
+The repository now includes a first scaffold of Python scripts built around the current SDK surface. They are intentionally lightweight and keep search-position measurement as a dedicated future adapter.
 
 ## Example Prompts
 
@@ -32,13 +33,44 @@ Examples of user requests that should trigger this skill:
 - `Используй $avito и найди объявления, где есть смысл усилить продвижение`
 - `Используй $avito и собери еженедельный отчет по просадке трафика и контактов`
 
-## Planned Scripts
+## Scripts
 
 - `scripts/auth_check.py`
 - `scripts/get_listing_stats.py`
 - `scripts/check_search_position.py`
 - `scripts/manage_promotion.py`
 - `scripts/portfolio_report.py`
+
+Current state:
+
+- `auth_check.py` validates environment-based SDK auth and can fetch the current profile
+- `get_listing_stats.py` reads item stats, call stats, and spendings for explicit listing ids
+- `check_search_position.py` emits a reproducible search scenario contract and is not implemented against live search yet
+- `manage_promotion.py` supports service listing, order inspection, BBIP suggests, forecast, and BBIP order creation
+- `portfolio_report.py` builds a portfolio report with the `streaming` and `materialize_all` pagination contract
+
+## Pagination Notes
+
+The SDK now contains a shared pagination layer built around:
+
+- `JsonPage`
+- `Paginator`
+- `PaginatedList`
+
+Practical implications:
+
+- some list endpoints may return lazy list-like collections instead of fully loaded lists
+- direct indexing can load only the needed next pages
+- `items[:]`, negative indexes, or forced materialization can load the whole dataset
+- scripts should set `limit` intentionally and avoid handwritten pagination loops when the SDK already handles traversal
+
+For operational reports, prefer lazy traversal first and full collection only when the user explicitly asks for a complete export or full audit.
+
+Recommended script convention:
+
+- default mode: `streaming`
+- optional flag: `--all-pages`
+- full export mode: `materialize_all`
 
 ## Main Principles
 
